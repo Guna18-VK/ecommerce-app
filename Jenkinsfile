@@ -27,21 +27,17 @@ pipeline {
         }
 
         stage('Docker Push') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-
-                    // ✅ More secure login
-                    bat 'echo %DOCKER_PASS% | %DOCKER_PATH% login -u %DOCKER_USER% --password-stdin'
-
-                    // ✅ Push with tag
-                    bat '%DOCKER_PATH% push %IMAGE_NAME%'
-                }
-            }
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'docker-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            bat 'echo %DOCKER_PASS% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USER% --password-stdin'
+            bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push %IMAGE_NAME%:latest'
         }
+    }
+}
 
         stage('Deploy to Kubernetes') {
             steps {
