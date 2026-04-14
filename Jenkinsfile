@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "guna18vk/ecommerce-app:latest"
+        IMAGE_NAME = "guna006/ecommerce-app"
     }
 
     stages {
