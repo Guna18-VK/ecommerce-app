@@ -20,13 +20,13 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                bat 'docker build -t %IMAGE_NAME% .'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t %IMAGE_NAME% .'
             }
         }
 
         stage('Docker Push') {
             steps {
-                bat 'docker push %IMAGE_NAME%'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push %IMAGE_NAME%'
             }
         }
 
