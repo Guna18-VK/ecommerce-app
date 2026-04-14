@@ -6,13 +6,6 @@ pipeline {
     }
 
     stages {
-
-        stage('Clone Code') {
-            steps {
-                git 'https://github.com/guna18vk/ecommerce-app.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 bat 'npm install'
