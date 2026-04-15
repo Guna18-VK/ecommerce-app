@@ -42,7 +42,17 @@ pipeline {
                bat '"%DOCKER_PATH%" build --platform linux/amd64 -t %IMAGE_NAME%:latest .'
             }
         }
-
+        stage('Test Login') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'docker-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            bat 'echo %DOCKER_PASS%'
+        }
+    }
+}
         // ✅ FIXED push
         stage('Docker Push') {
             steps {
