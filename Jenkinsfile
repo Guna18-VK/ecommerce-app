@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "guna006/ecommerce-app"
+        DOCKER_PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
     }
 
     stages {
@@ -19,7 +20,7 @@ pipeline {
             }
         }
 
-        // ✅ ADD THIS STAGE (VERY IMPORTANT)
+        // ✅ FIXED Docker Login (clean + reliable)
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -27,23 +28,29 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    bat 'echo %DOCKER_PASS% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USER% --password-stdin'
+                    bat """
+                    %DOCKER_PATH% logout
+                    echo %DOCKER_PASS% | %DOCKER_PATH% login -u %DOCKER_USER% --password-stdin
+                    """
                 }
             }
         }
 
+        // ✅ FIXED build (explicit tag)
         stage('Docker Build') {
             steps {
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build --platform linux/amd64 -t %IMAGE_NAME%:latest .'
+                bat '%DOCKER_PATH% build --platform linux/amd64 -t %IMAGE_NAME%:latest .'
             }
         }
 
+        // ✅ FIXED push
         stage('Docker Push') {
             steps {
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push %IMAGE_NAME%:latest'
+                bat '%DOCKER_PATH% push %IMAGE_NAME%:latest'
             }
         }
 
+        // ✅ OPTIONAL (only if kubectl configured)
         stage('Deploy to Kubernetes') {
             steps {
                 bat 'kubectl apply -f kubernetes/deployment.yaml'
