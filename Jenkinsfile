@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "guna006/ecommerce-app:latest"
-        DOCKER_PATH = "\"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe\""
+        IMAGE_NAME = "guna006/ecommerce-app"
     }
 
     stages {
+
         stage('Build') {
             steps {
                 bat 'npm install'
@@ -19,32 +19,33 @@ pipeline {
             }
         }
 
+        // ✅ ADD THIS STAGE (VERY IMPORTANT)
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat 'echo %DOCKER_PASS% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USER% --password-stdin'
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
-                // ✅ Added platform fix (IMPORTANT)
-                bat '%DOCKER_PATH% build --platform linux/amd64 -t %IMAGE_NAME% .'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build --platform linux/amd64 -t %IMAGE_NAME%:latest .'
             }
         }
 
         stage('Docker Push') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'docker-creds',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            bat 'echo %DOCKER_PASS% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USER% --password-stdin'
-            bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push %IMAGE_NAME%:latest'
+            steps {
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push %IMAGE_NAME%:latest'
+            }
         }
-    }
-}
 
         stage('Deploy to Kubernetes') {
             steps {
-                // ✅ Ensure kubectl works
-                bat 'kubectl version --client'
-
-                // ✅ Apply deployment & service
                 bat 'kubectl apply -f kubernetes/deployment.yaml'
                 bat 'kubectl apply -f kubernetes/service.yaml'
             }
