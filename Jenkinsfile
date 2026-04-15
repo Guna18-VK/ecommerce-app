@@ -22,31 +22,31 @@ pipeline {
 
         // ✅ FIXED Docker Login (clean + reliable)
         stage('Docker Login') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    bat """
-                    %DOCKER_PATH% logout
-                    echo %DOCKER_PASS% | %DOCKER_PATH% login -u %DOCKER_USER% --password-stdin
-                    """
-                }
-            }
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'docker-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            bat """
+            "%DOCKER_PATH%" logout
+            echo %DOCKER_PASS% | "%DOCKER_PATH%" login -u %DOCKER_USER% --password-stdin
+            """
         }
+    }
+}
 
         // ✅ FIXED build (explicit tag)
         stage('Docker Build') {
             steps {
-                bat '%DOCKER_PATH% build --platform linux/amd64 -t %IMAGE_NAME%:latest .'
+               bat '"%DOCKER_PATH%" build --platform linux/amd64 -t %IMAGE_NAME%:latest .'
             }
         }
 
         // ✅ FIXED push
         stage('Docker Push') {
             steps {
-                bat '%DOCKER_PATH% push %IMAGE_NAME%:latest'
+                bat '"%DOCKER_PATH%" push %IMAGE_NAME%:latest'
             }
         }
 
